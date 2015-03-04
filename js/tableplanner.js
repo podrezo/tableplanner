@@ -127,7 +127,7 @@
         strokeWidth: 5,
         hasControls: false,
         hasBorders: true,
-        fill: 'ivory' });
+        fill: 'rgb(61, 146, 201)' });
       var tableLabel = new fabric.Text(table.id.toString(),
         { top: boxOffsetY + (boxSize/2) - (baseFontSize/1.5), // TODO Magic 1.5
           left: boxOffsetX + (boxSize/2) - (baseFontSize/4), // TODO Magic 4
@@ -156,7 +156,8 @@
           radius: seatRadius, // we want it half as big as the container
           stroke: 'black',
           strokeWidth: 2,
-          fill: 'gray' });
+          strokeDashArray: [2, 2],
+          fill: 'white' });
         var seatLabel = new fabric.Text((j+1).toString(), {
             left: seatRadius-(baseFontSize/12),
             top: seatRadius-(baseFontSize/12),
@@ -185,7 +186,7 @@
             radius: seatRadius, // we want it half as big as the container
             stroke: 'black',
             strokeWidth: 2,
-            fill: 'green' });
+            fill: 'rgb(176, 202, 219)' });
           var guestLabel = new fabric.Text(guest.name, {
             top: seatRadius*2,
             fill: 'black',
