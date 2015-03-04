@@ -6,111 +6,196 @@
   });
 
   canvas.on({
-    'object:moving': function(e) {
+    'object:selected': function(e) {
       e.target.bringToFront();
+      e.target.oldCoords = {
+        left: e.target.left,
+        top: e.target.top
+      };
+      var guest = e.target.model.value;
+    },
+    'object:moving': function(e) {
       e.target.forEachObject(function(piece) {
         piece.opacity = 0.5;
       });
     },
     'object:modified': function(e) {
+      var guest = e.target.model.value;
       e.target.forEachObject(function(piece) {
         piece.opacity = 1;
       });
+      // calculate what new seat to move to, if any
+      var newSeat = null;
+      canvas.forEachObject(function(obj) {
+        if (obj === e.target) return;
+        if(obj.model && obj.model.type === 'seat' && e.target.intersectsWithObject(obj))
+        {
+          newSeat = obj;
+          return;
+        }
+      });
+      // mark how many animatios are done (left/right)
+      var animsDone = 0;
+      var animDonehandler = function() {
+        animsDone++;
+        if(animsDone === 2) {
+          animsDone = 0;
+          redrawModel();
+        }
+      };
+      // remove the guest from their current table and move them to the new seat
+      if(newSeat)
+      {
+        for(var i=0; i < model.tables.length; i++) {
+          var table = model.tables[i];
+          table.guests = _.map(table.guests, function(checkGuest) {
+            if(checkGuest !== null && checkGuest === guest.id) {
+              return null;
+            } else {
+              return checkGuest;
+            }
+          });
+        }
+        var table = _.findWhere(model.tables,{ id: newSeat.model.value.tableId });
+        table.guests[newSeat.model.value.seatId] = guest.id;
+        e.target.animate('left', newSeat.left, {
+          duration: 200,
+          onChange: canvas.renderAll.bind(canvas),
+          onComplete: animDonehandler,
+          easing: fabric.util.ease['easeInExpo']
+        });
+        e.target.animate('top', newSeat.top, {
+          duration: 200,
+          onChange: canvas.renderAll.bind(canvas),
+          onComplete: animDonehandler,
+          easing: fabric.util.ease['easeInExpo']
+        });
+        delete e.target.oldCoords;
+        canvas.deactivateAll();
+      } else {
+        e.target.animate('left', e.target.oldCoords.left, {
+          duration: 1000,
+          onChange: canvas.renderAll.bind(canvas),
+          onComplete: animDonehandler,
+          easing: fabric.util.ease['easeOutElastic']
+        });
+        e.target.animate('top', e.target.oldCoords.top, {
+          duration: 1000,
+          onChange: canvas.renderAll.bind(canvas),
+          onComplete: animDonehandler,
+          easing: fabric.util.ease['easeOutElastic']
+        });
+        delete e.target.oldCoords;
+        canvas.deactivateAll();
+      }
     }
   });
 
-  var i=0;
-  window._.forEach(testData.tables,function(table) {
-    // start table drawing
-    var table
-      , tableLabel
-      , boxSize = 300
-      , boxOffsetX = boxSize * i
-      , boxOffsetY = 0
-      , baseFontSize = 72
-      , tableRadius = boxSize/4 // half as big as the container
-      , seatingRadius = (3*boxSize/8) // 3/4 of the container
-      , seatRadius = boxSize/16;
-    /* 'size' reflects the size, in pixels, of the entire shebang
-     * */
-    var tableOutline = new fabric.Rect({
-      top: 0, left: boxOffsetX,
-      width: boxSize,
-      height: boxSize,
-      fill: 'ivory',
-      stroke: 'gray' });
-    var seatingOutline = new fabric.Circle({
-        top: boxOffsetY + (boxSize-seatingRadius*2) / 2,
-        left: boxOffsetX + (boxSize-seatingRadius*2) / 2,
-        radius: seatingRadius,
-        stroke: 'blue',
-        fill: 'ivory' });
-    var tableCircle = new fabric.Circle({
-      top: boxOffsetY + (boxSize-(tableRadius*2))/2,
-      left: boxOffsetX + (boxSize-(tableRadius*2))/2,
-      radius: boxSize/4,
-      stroke: 'black',
-      strokeWidth: 5,
-      hasControls: false,
-      hasBorders: true,
-      fill: 'ivory' });
-    var tableLabel = new fabric.Text(table.id.toString(),
-      { top: boxOffsetY + (boxSize/2) - (baseFontSize/1.5), // TODO Magic 1.5
-        left: boxOffsetX + (boxSize/2) - (baseFontSize/4), // TODO Magic 4
-        fill: 'black',
-        fontFamily: 'Verdana',
-        fontSize: baseFontSize });
-    var tableGroup = new fabric.Group([
-      //tableOutline,
-      //seatingOutline,
-      tableCircle,
-      tableLabel
-    ], {
-      left: boxOffsetX,
-      top: boxOffsetY,
-      width: boxSize,
-      height: boxSize,
-      selectable: false
-    });
-    canvas.add(tableGroup);
-
-    var j=0;
-    _.forEach(table.guests,function(guestId) {
-      // start guest drawing
-      var personAngle = ((2*Math.PI)/table.guests.length)*j;
-      var guest = _.findWhere(testData.guests, { id: guestId });
-      var guestCircle = new fabric.Circle({
-        radius: seatRadius, // we want it half as big as the container
+  var redrawModel = function() {
+    canvas.clear();
+    var i=0;
+    _.forEach(model.tables,function(table) {
+      // start table drawing
+      var table
+        , tableLabel
+        , boxSize = 300
+        , boxOffsetX = boxSize * i
+        , boxOffsetY = 0
+        , baseFontSize = 72
+        , tableRadius = boxSize/4 // half as big as the container
+        , seatingRadius = (3*boxSize/8) // 3/4 of the container
+        , seatRadius = boxSize/16;
+      /* 'size' reflects the size, in pixels, of the entire shebang
+       * */
+      var tableOutline = new fabric.Rect({
+        top: 0, left: boxOffsetX,
+        width: boxSize,
+        height: boxSize,
+        fill: 'ivory',
+        stroke: 'gray' });
+      var seatingOutline = new fabric.Circle({
+          top: boxOffsetY + (boxSize-seatingRadius*2) / 2,
+          left: boxOffsetX + (boxSize-seatingRadius*2) / 2,
+          radius: seatingRadius,
+          stroke: 'blue',
+          fill: 'ivory' });
+      var tableCircle = new fabric.Circle({
+        top: boxOffsetY + (boxSize-(tableRadius*2))/2,
+        left: boxOffsetX + (boxSize-(tableRadius*2))/2,
+        radius: boxSize/4,
         stroke: 'black',
-        strokeWidth: 2,
-        fill: guest ? 'green' : 'gray' });
-      var groupItems = [guestCircle];
-      if(guest)
-      {
-        var guestLabel = new fabric.Text(guest.name, {
-          top: seatRadius*2,
+        strokeWidth: 5,
+        hasControls: false,
+        hasBorders: true,
+        fill: 'ivory' });
+      var tableLabel = new fabric.Text(table.id.toString(),
+        { top: boxOffsetY + (boxSize/2) - (baseFontSize/1.5), // TODO Magic 1.5
+          left: boxOffsetX + (boxSize/2) - (baseFontSize/4), // TODO Magic 4
           fill: 'black',
-          fontWeight: 'bold',
-          fontSize: baseFontSize/7,
-          fontFamily: 'Verdana'
-        });
-        groupItems.push(guestLabel);
-      }
-      var guestGroup = new fabric.Group(groupItems, {
-        top: boxOffsetY + (boxSize/2) + seatingRadius*Math.sin(personAngle) - seatRadius,
-        left: boxOffsetX + (boxSize/2) + seatingRadius*Math.cos(personAngle) - seatRadius
+          fontFamily: 'Verdana',
+          fontSize: baseFontSize });
+      var tableGroup = new fabric.Group([
+        //tableOutline,
+        //seatingOutline,
+        tableCircle,
+        tableLabel
+      ], {
+        left: boxOffsetX,
+        top: boxOffsetY,
+        width: boxSize,
+        height: boxSize,
+        selectable: false
       });
-      canvas.add(guestGroup);
+      canvas.add(tableGroup);
 
-      j++;
-      //end guest drawing
-    });
+      var j=0;
+      _.forEach(table.guests,function(guestId) {
+        // start guest drawing
+        var personAngle = ((2*Math.PI)/table.guests.length)*j;
+        var guest = _.findWhere(model.guests, { id: guestId });
+        var guestCircle = new fabric.Circle({
+          radius: seatRadius, // we want it half as big as the container
+          stroke: 'black',
+          strokeWidth: 2,
+          fill: guest ? 'green' : 'gray' });
+        var groupItems = [guestCircle];
+        if(guest)
+        {
+          var guestLabel = new fabric.Text(guest.name, {
+            top: seatRadius*2,
+            fill: 'black',
+            fontWeight: 'bold',
+            fontSize: baseFontSize/7,
+            fontFamily: 'Verdana'
+          });
+          groupItems.push(guestLabel);
+        }
+        var guestGroup = new fabric.Group(groupItems, {
+          top: boxOffsetY + (boxSize/2) + seatingRadius*Math.sin(personAngle) - seatRadius,
+          left: boxOffsetX + (boxSize/2) + seatingRadius*Math.cos(personAngle) - seatRadius,
+          hasBorders: false,
+          hasControls: false,
+          selectable: guest,
+          model: {
+            type: guest ? 'guest' : 'seat',
+            value: guest || { tableId: table.id, seatId: j }
+          }
+        });
+        guestGroup.on('mouse:down', function(g) {
+          console.log(g);
+        });
+        guestGroup.on('mouse:up', function(g) {
+          console.log(g);
+        });
+        canvas.add(guestGroup);
 
-    tableCircle.on('selected', function() {
-      console.log('table ' + table.id.toString() + ' is selected');
-    });
+        j++;
+        //end guest drawing
+      });
 
-    i++;
-    // end table drawing
-  })
+      i++;
+      // end table drawing
+    })
+  };
+  redrawModel();
 })();

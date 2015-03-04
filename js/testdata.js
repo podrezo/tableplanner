@@ -1,5 +1,5 @@
 'use strict';
-var testData = {
+var model = {
   guests: [
     { id:  1, name: "Alice" },
     { id:  2, name: "Bob" },
