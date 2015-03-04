@@ -10,10 +10,12 @@ var testData = {
     { id:  7, name: "Oscar" },
     { id:  8, name: "Peggy" },
     { id:  9, name: "Sam" },
-    { id: 10, name: "Wendy" }
+    { id: 10, name: "Wendy" },
+    { id: 11, name: 'John' }
   ],
   tables: [
     { id: 1, guests: [1,2,3,4,5,6,null,null] },
-    { id: 2, guests: [7,8,null,null,9,10,null,null] }
+    { id: 2, guests: [7,8,null,null,9,10, null] },
+    { id: 3, guests: [null, null, 11] }
   ]
 };
