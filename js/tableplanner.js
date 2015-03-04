@@ -62,13 +62,13 @@
           duration: 200,
           onChange: canvas.renderAll.bind(canvas),
           onComplete: animDonehandler,
-          easing: fabric.util.ease['easeInExpo']
+          easing: fabric.util.ease['easeInQuad']
         });
         e.target.animate('top', newSeat.top, {
           duration: 200,
           onChange: canvas.renderAll.bind(canvas),
           onComplete: animDonehandler,
-          easing: fabric.util.ease['easeInExpo']
+          easing: fabric.util.ease['easeInQuad']
         });
         delete e.target.oldCoords;
         canvas.deactivateAll();
@@ -151,16 +151,41 @@
       var j=0;
       _.forEach(table.guests,function(guestId) {
         // start guest drawing
-        var personAngle = ((2*Math.PI)/table.guests.length)*j;
-        var guest = _.findWhere(model.guests, { id: guestId });
-        var guestCircle = new fabric.Circle({
+        var seatAngle = ((2*Math.PI)/table.guests.length)*j;
+        var seatCircle = new fabric.Circle({
           radius: seatRadius, // we want it half as big as the container
           stroke: 'black',
           strokeWidth: 2,
-          fill: guest ? 'green' : 'gray' });
-        var groupItems = [guestCircle];
+          fill: 'gray' });
+        var seatLabel = new fabric.Text((j+1).toString(), {
+            left: seatRadius-(baseFontSize/12),
+            top: seatRadius-(baseFontSize/12),
+            fill: 'black',
+            fontWeight: 'bold',
+            fontSize: baseFontSize/6,
+            fontFamily: 'Verdana'
+          });
+        var seatGroup = new fabric.Group([seatCircle, seatLabel], {
+            top: boxOffsetY + (boxSize/2) + seatingRadius*Math.sin(seatAngle) - seatRadius,
+            left: boxOffsetX + (boxSize/2) + seatingRadius*Math.cos(seatAngle) - seatRadius,
+            hasBorders: false,
+            hasControls: false,
+            selectable: guest,
+            model: {
+              type: 'seat',
+              value: { tableId: table.id, seatId: j }
+            }
+          });
+        canvas.add(seatGroup);
+        var groupItems = [seatCircle];
+        var guest = _.findWhere(model.guests, { id: guestId });
         if(guest)
         {
+          var guestCircle = new fabric.Circle({
+            radius: seatRadius, // we want it half as big as the container
+            stroke: 'black',
+            strokeWidth: 2,
+            fill: 'green' });
           var guestLabel = new fabric.Text(guest.name, {
             top: seatRadius*2,
             fill: 'black',
@@ -168,27 +193,33 @@
             fontSize: baseFontSize/7,
             fontFamily: 'Verdana'
           });
-          groupItems.push(guestLabel);
+          var guestSeatLabel = new fabric.Text((j+1).toString(), {
+              left: seatRadius-(baseFontSize/12),
+              top: seatRadius-(baseFontSize/12),
+              fill: 'black',
+              fontWeight: 'bold',
+              fontSize: baseFontSize/6,
+              fontFamily: 'Verdana'
+            });
+          var guestGroup = new fabric.Group([guestCircle, guestLabel, guestSeatLabel], {
+            top: boxOffsetY + (boxSize/2) + seatingRadius*Math.sin(seatAngle) - seatRadius,
+            left: boxOffsetX + (boxSize/2) + seatingRadius*Math.cos(seatAngle) - seatRadius,
+            hasBorders: false,
+            hasControls: false,
+            selectable: guest,
+            model: {
+              type: 'guest',
+              value: guest
+            }
+          });
+          guestGroup.on('mouse:down', function(g) {
+            console.log(g);
+          });
+          guestGroup.on('mouse:up', function(g) {
+            console.log(g);
+          });
+          canvas.add(guestGroup);
         }
-        var guestGroup = new fabric.Group(groupItems, {
-          top: boxOffsetY + (boxSize/2) + seatingRadius*Math.sin(personAngle) - seatRadius,
-          left: boxOffsetX + (boxSize/2) + seatingRadius*Math.cos(personAngle) - seatRadius,
-          hasBorders: false,
-          hasControls: false,
-          selectable: guest,
-          model: {
-            type: guest ? 'guest' : 'seat',
-            value: guest || { tableId: table.id, seatId: j }
-          }
-        });
-        guestGroup.on('mouse:down', function(g) {
-          console.log(g);
-        });
-        guestGroup.on('mouse:up', function(g) {
-          console.log(g);
-        });
-        canvas.add(guestGroup);
-
         j++;
         //end guest drawing
       });
