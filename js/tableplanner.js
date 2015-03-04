@@ -30,7 +30,12 @@
         if (obj === e.target) return;
         if(obj.model && obj.model.type === 'seat' && e.target.intersectsWithObject(obj))
         {
-          newSeat = obj;
+          // check to make sure that seat is not occupied
+          if(_.findWhere(model.tables,{ id : obj.model.value.tableId }).guests[obj.model.value.seatId]) {
+            // seat is occupied
+          } else {
+            newSeat = obj;
+          }
           return;
         }
       });
