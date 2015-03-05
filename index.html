@@ -23,7 +23,7 @@
 
 <body>
 	<div class="pure-g" id="layout">
-		<div class="sidebar pure-u-1 pure-u-md-1-4">
+		<div id="sidebar" class="sidebar pure-u-1 pure-u-md-1-4">
 			<div class="header">
 				<h1 class="brand-title">Table Planner</h1>
 
@@ -39,12 +39,14 @@
 			</div>
 		</div>
 
-		<div class="content pure-u-1 pure-u-md-3-4" style="padding: 0;">
-			<canvas height="768" id="c" width="1024" style="padding:0; margin:0;">Your browser doesn't support canvas. What is this? 1990?</canvas>
+		<div id="canvascontainer" class="content pure-u-1 pure-u-md-3-4" style="padding: 0;">
+			<canvas id="c" style="padding:0; margin:0;">Your browser doesn't support canvas. What is this? 1990?</canvas>
 		</div>
 	</div>
   <!-- Javascript -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.2/underscore-min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+	<script src="js/resizeend.js"></script>
   <script src="js/fabric.min.js"></script>
   <script src="js/testdata.js"></script>
   <script src="js/tableplanner.js"></script>

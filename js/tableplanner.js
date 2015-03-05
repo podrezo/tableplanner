@@ -5,6 +5,8 @@
     selection: false
   });
 
+  window.addEventListener('resize', redrawModel, false);
+
   canvas.on({
     'object:selected': function(e) {
       e.target.bringToFront();
@@ -78,18 +80,26 @@
         delete e.target.oldCoords;
         canvas.deactivateAll();
       } else {
-        e.target.animate('left', e.target.oldCoords.left, {
-          duration: 1000,
-          onChange: canvas.renderAll.bind(canvas),
-          onComplete: animDonehandler,
-          easing: fabric.util.ease['easeOutElastic']
-        });
-        e.target.animate('top', e.target.oldCoords.top, {
-          duration: 1000,
-          onChange: canvas.renderAll.bind(canvas),
-          onComplete: animDonehandler,
-          easing: fabric.util.ease['easeOutElastic']
-        });
+        if(e.target.left !== e.target.oldCoords.left) {
+          e.target.animate('left', e.target.oldCoords.left, {
+            duration: 1000,
+            onChange: canvas.renderAll.bind(canvas),
+            onComplete: animDonehandler,
+            easing: fabric.util.ease['easeOutElastic']
+          });
+        } else {
+          animsDone++;
+        }
+        if(e.target.top !== e.target.oldCoords.top) {
+          e.target.animate('top', e.target.oldCoords.top, {
+            duration: 1000,
+            onChange: canvas.renderAll.bind(canvas),
+            onComplete: animDonehandler,
+            easing: fabric.util.ease['easeOutElastic']
+          });
+        } else {
+          animsDone++;
+        }
         delete e.target.oldCoords;
         canvas.deactivateAll();
       }
@@ -97,15 +107,25 @@
   });
 
   var redrawModel = function() {
+    // set up canvas basics
     canvas.clear();
+    canvas.setHeight($("#sidebar").height());
+    canvas.setWidth($("#canvascontainer").width());
+
+    // "How to best fit N squares into a x*y grid" http://math.stackexchange.com/questions/466198/algorithm-to-get-the-maximum-size-of-n-squares-that-fit-into-a-rectangle-with-a
+    var canvasWidth = canvas.getWidth()
+      , canvasHeight = canvas.getHeight()
+      , largerDimension = Math.max(canvasWidth,canvasHeight)
+      , boxSize = largerDimension / Math.ceil(largerDimension / Math.floor(Math.sqrt(canvasWidth*canvasHeight/model.tables.length)))
+      , boxesPerRow = Math.floor(canvasWidth/boxSize);
+
     var i=0;
     _.forEach(model.tables,function(table) {
       // start table drawing
       var table
         , tableLabel
-        , boxSize = 300
-        , boxOffsetX = boxSize * i
-        , boxOffsetY = 0
+        , boxOffsetX = boxSize * (i % boxesPerRow)
+        , boxOffsetY = Math.floor(i / boxesPerRow) * boxSize
         , baseFontSize = 72
         , tableRadius = boxSize/4 // half as big as the container
         , seatingRadius = (3*boxSize/8) // 3/4 of the container
