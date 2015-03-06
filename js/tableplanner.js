@@ -1,11 +1,11 @@
+var model = null;
+
 (function() {
   var canvas = this.__canvas = new fabric.Canvas('c',
   {
     hoverCursor: 'pointer',
     selection: false
   });
-
-  window.addEventListener('resize', redrawModel, false);
 
   canvas.on({
     'object:selected': function(e) {
@@ -254,5 +254,34 @@
       // end table drawing
     })
   };
-  redrawModel();
+
+  window.addEventListener('resize', redrawModel, false);
+
+  var loadData = function() {
+    model = localStorage.getItem('model');
+    if(model)
+    {
+      model = JSON.parse(model);
+      redrawModel();
+    } else {
+      resetData();
+    }
+
+  };
+
+  var resetData = function() {
+    model = JSON.parse(JSON.stringify(sampleData)); // copy sample data
+    redrawModel();
+  };
+
+  $('#btnSave').click(function() {
+    localStorage.setItem('model', JSON.stringify(model));
+  });
+
+  $('#btnReset').click(resetData);
+
+  $('#btnLoad').click(loadData);
+
+  loadData();
+
 })();
