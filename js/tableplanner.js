@@ -220,8 +220,11 @@ var model = null;
 				hasBorders: true,
 				fill: 'rgb(61, 146, 201)' });
 			var tableLabel = new fabric.Text(table.id.toString(),
-				{ top: boxOffsetY + (boxSize/2) - (baseFontSize/1.5), // TODO Magic 1.5
-					left: boxOffsetX + (boxSize/2) - (baseFontSize/4), // TODO Magic 4
+				{ top: boxOffsetY + (boxSize/2),
+					left:boxOffsetX + (boxSize/2),
+					originY: boxOffsetY + (boxSize/2),
+					originX: boxOffsetX + (boxSize/2),
+					textAlign: 'center',
 					fill: 'black',
 					fontFamily: 'Verdana',
 					fontSize: baseFontSize });
@@ -288,8 +291,11 @@ var model = null;
 					strokeDashArray: [2, 2],
 					fill: '' });
 				var seatLabel = new fabric.Text((j+1).toString(), {
-						left: seatRadius-(baseFontSize/12),
-						top: seatRadius-(baseFontSize/12),
+						left: seatRadius,
+						top: seatRadius,
+						originX: seatRadius-(baseFontSize/12),
+						originY: seatRadius-(baseFontSize/12),
+						textAlign: 'center',
 						fill: 'black',
 						fontWeight: 'bold',
 						fontSize: baseFontSize/6,
