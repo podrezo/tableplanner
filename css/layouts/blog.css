@@ -60,7 +60,7 @@ h3 {
     *display: inline;
     zoom: 1;
 }
-.nav-item a {
+.nav-item button {
     background: transparent;
     border: 2px solid rgb(176, 202, 219);
     color: #fff;
@@ -69,8 +69,8 @@ h3 {
     text-transform: uppercase;
     font-size: 85%;
 }
-.nav-item a:hover,
-.nav-item a:focus {
+.nav-item button:hover,
+.nav-item button:focus {
     border: 2px solid rgb(61, 146, 201);
     text-decoration: none;
 }
@@ -172,4 +172,28 @@ h3 {
         top: 0;
         bottom: 0;
     }
+}
+
+.button-success,
+.button-error,
+.button-warning,
+.button-secondary {
+    color: white !important;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2) !important;
+}
+
+.button-success {
+    background: rgb(28, 184, 65) !important; /* this is a green */
+}
+
+.button-error {
+    background: rgb(202, 60, 60) !important; /* this is a maroon */
+}
+
+.button-warning {
+    background: rgb(223, 117, 20) !important; /* this is an orange */
+}
+
+.button-secondary {
+    background: rgb(66, 184, 221) !important; /* this is a light blue */
 }
