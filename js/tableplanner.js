@@ -53,28 +53,35 @@ var model = null;
 				piece.opacity = 1;
 			});
 			// calculate what new seat to move to, if any
-			var newSeat = null;
-		    var checkTableId = tableIndexFromCoords(e.target.left, e.target.top); // reduce search space by knowing what table to check
-		    var checkTable = model.tables[checkTableId];
+			var newSeat = null
+			  , swapGuest = null
+		      , checkTableId = tableIndexFromCoords(e.target.left, e.target.top) // reduce search space by knowing what table to check
+		      , checkTable = model.tables[checkTableId];
 		    _.forEach(model.tables[checkTableId]._seats, function(obj) {
 		        if(obj.model && obj.model.type === 'seat' && e.target.intersectsWithObject(obj))
 				{
-					// check to make sure that seat is not occupied
-					if(model.tables[checkTableId].guests[obj.model.value.seatId]) {
-						// seat is occupied
-					} else {
-						newSeat = obj;
+					// can't swap with self
+					if(obj.model.value.tableId === guest.seat.tableId && obj.model.value.seatId === guest.seat.seatId)
+					{
+						return;
 					}
+					// set swapGuest to the guest currently in the seat, otherwise it will be null
+					swapGuest = _.findWhere(model.guests, { id : model.tables[checkTableId].guests[obj.model.value.seatId] });
+					// set the new seat we want to move to
+					newSeat = obj;
 					return;
 				}
 		    });
 			// mark how many animations are done (left/right)
 			var animsDone = 0;
+			var totalAnims = swapGuest ? 4 : 2; // x & y anim, twice if swapping
 			var animDonehandler = function() {
 				animsDone++;
-				if(animsDone === 2) {
-					animsDone = 0;
+				if(animsDone === totalAnims) {
 					e.target.selectable = true;
+					if(swapGuest) {
+						swapGuest._entity.selectable = true;
+					}
 				}
 			};
 			// make the guest not movable while it is being animated
@@ -84,6 +91,34 @@ var model = null;
 			{
 				var oldTable = _.findWhere(model.tables,{ id: guest.seat.tableId });
 				oldTable.guests[guest.seat.seatId] = null;
+				if(swapGuest)
+				{
+					swapGuest._entity.selectable = false;
+					swapGuest.seat = guest.seat;
+					var swapTable = _.findWhere(model.tables,{ id: swapGuest.seat.tableId })
+					  , swapSeat = swapTable._seats[swapGuest.seat.seatId];
+					swapTable.guests[swapGuest.seat.seatId] = swapGuest.id;
+					if(swapGuest._entity.left !== swapSeat.left) {
+						swapGuest._entity.animate('left', swapSeat.left, {
+							duration: 1000,
+							onChange: canvas.renderAll.bind(canvas),
+							onComplete: animDonehandler,
+							easing: fabric.util.ease['easeOutElastic']
+						});
+					} else {
+						animsDone++;
+					}
+					if(swapGuest._entity.top !== swapSeat.top) {
+						swapGuest._entity.animate('top', swapSeat.top, {
+							duration: 1000,
+							onChange: canvas.renderAll.bind(canvas),
+							onComplete: animDonehandler,
+							easing: fabric.util.ease['easeOutElastic']
+						});
+					} else {
+						animsDone++;
+					}
+				}
 				guest.seat = newSeat.model.value; // newSeat is the physical entity, not the model, but we have the handle for it
 				var table = _.findWhere(model.tables,{ id: newSeat.model.value.tableId });
 				table.guests[newSeat.model.value.seatId] = guest.id;
