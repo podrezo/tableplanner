@@ -237,7 +237,7 @@ var model = null;
 			var j=0;
 			_.forEach(table.guests,function(guestId) {
 				// start guest drawing
-				var seatAngle = ((2*Math.PI)/table.guests.length)*j;
+				var seatAngle = (((2*Math.PI)/table.guests.length)*j)+(1.5*Math.PI);
 				var seatCircle = new fabric.Circle({
 					radius: seatRadius, // we want it half as big as the container
 					stroke: 'black',
