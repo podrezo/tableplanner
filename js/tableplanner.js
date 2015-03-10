@@ -257,7 +257,7 @@ var model = null;
 						stroke: 'black',
 						strokeWidth: 2,
 						fill: 'rgb(176, 202, 219)' });
-					var guestLabel = new fabric.Text(guest.name, {
+					var guestLabel = new fabric.Text(guest.initials, {
 						top: seatRadius*2.5, // slightly below the circle by using 2.5 instead of 2
 						left: seatRadius,
 						originX: seatRadius,
@@ -330,11 +330,25 @@ var model = null;
 
 	window.addEventListener('resize', redrawModel, false);
 
+	var calculateInitials = function()
+	{
+		var names = _.map(model.guests, function(guest) {
+			return guest.name;
+		});
+		var resultInitials = initials(names);
+		var i=0;
+		_.forEach(model.guests, function(guest) {
+			guest.initials = resultInitials[i];
+			i++;
+		});
+	}
+
 	var loadData = function() {
 		model = localStorage.getItem('model');
 		if(model)
 		{
 			model = JSON.parse(model);
+			calculateInitials();
 			redrawModel();
 		} else {
 			resetData();
@@ -344,6 +358,7 @@ var model = null;
 
 	var resetData = function() {
 		model = JSON.parse(JSON.stringify(sampleData)); // copy sample data
+		calculateInitials();
 		redrawModel();
 	};
 
