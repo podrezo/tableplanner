@@ -258,7 +258,11 @@ var model = null;
 						strokeWidth: 2,
 						fill: 'rgb(176, 202, 219)' });
 					var guestLabel = new fabric.Text(guest.name, {
-						top: seatRadius*2,
+						top: seatRadius*2.5, // slightly below the circle by using 2.5 instead of 2
+						left: seatRadius,
+						originX: seatRadius,
+						originY: seatRadius*2,
+						textAlign: 'center',
 						fill: 'black',
 						fontWeight: 'bold',
 						fontSize: baseFontSize/7,
