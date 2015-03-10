@@ -35,11 +35,11 @@ var model = null;
 
 	canvas.on({
 		'object:selected': function(e) {
-			e.target.bringToFront();
 			e.target.oldCoords = {
 				left: e.target.left,
 				top: e.target.top
 			};
+			canvas.bringToFront(e.target);
 			var guest = e.target.model.value;
 		},
 		'object:moving': function(e) {
@@ -78,8 +78,13 @@ var model = null;
 			var animDonehandler = function() {
 				animsDone++;
 				if(animsDone === totalAnims) {
+					//canvas.sendToBack(e.target);
+					// BUG: in fabricjs, sending the target to back makes it unselectable; instead bring the seat to front
+					canvas.bringToFront(_.findWhere(model.tables,{ id: e.target.model.value.seat.tableId })._seats[e.target.model.value.seat.seatId]);
 					e.target.selectable = true;
 					if(swapGuest) {
+						//canvas.sendToBack(swapGuest._entity);
+						canvas.bringToFront(_.findWhere(model.tables,{ id: swapGuest.seat.tableId })._seats[swapGuest.seat.seatId]);
 						swapGuest._entity.selectable = true;
 					}
 				}
@@ -94,6 +99,7 @@ var model = null;
 				if(swapGuest)
 				{
 					swapGuest._entity.selectable = false;
+					canvas.bringToFront(swapGuest._entity);
 					swapGuest.seat = guest.seat;
 					var swapTable = _.findWhere(model.tables,{ id: swapGuest.seat.tableId })
 					  , swapSeat = swapTable._seats[swapGuest.seat.seatId];
@@ -238,34 +244,6 @@ var model = null;
 			_.forEach(table.guests,function(guestId) {
 				// start guest drawing
 				var seatAngle = (((2*Math.PI)/table.guests.length)*j)+(1.5*Math.PI);
-				var seatCircle = new fabric.Circle({
-					radius: seatRadius, // we want it half as big as the container
-					stroke: 'black',
-					strokeWidth: 2,
-					strokeDashArray: [2, 2],
-					fill: 'white' });
-				var seatLabel = new fabric.Text((j+1).toString(), {
-						left: seatRadius-(baseFontSize/12),
-						top: seatRadius-(baseFontSize/12),
-						fill: 'black',
-						fontWeight: 'bold',
-						fontSize: baseFontSize/6,
-						fontFamily: 'Verdana'
-					});
-				var seatGroup = new fabric.Group([seatCircle, seatLabel], {
-						top: boxOffsetY + (boxSize/2) + seatingRadius*Math.sin(seatAngle) - seatRadius,
-						left: boxOffsetX + (boxSize/2) + seatingRadius*Math.cos(seatAngle) - seatRadius,
-						hasBorders: false,
-						hasControls: false,
-						selectable: guest,
-						model: {
-							type: 'seat',
-							value: { tableId: table.id, seatId: j }
-						}
-					});
-        		table._seats.push(seatGroup);
-				canvas.add(seatGroup);
-				var groupItems = [seatCircle];
 				var guest = _.findWhere(model.guests, { id: guestId });
 				if(guest)
 				{
@@ -303,6 +281,34 @@ var model = null;
           			guest._entity = guestGroup;
 					canvas.add(guestGroup);
 				}
+				var seatCircle = new fabric.Circle({
+					radius: seatRadius, // we want it half as big as the container
+					stroke: 'black',
+					strokeWidth: 2,
+					strokeDashArray: [2, 2],
+					fill: '' });
+				var seatLabel = new fabric.Text((j+1).toString(), {
+						left: seatRadius-(baseFontSize/12),
+						top: seatRadius-(baseFontSize/12),
+						fill: 'black',
+						fontWeight: 'bold',
+						fontSize: baseFontSize/6,
+						fontFamily: 'Verdana'
+					});
+				var seatGroup = new fabric.Group([seatCircle, seatLabel], {
+						top: boxOffsetY + (boxSize/2) + seatingRadius*Math.sin(seatAngle) - seatRadius,
+						left: boxOffsetX + (boxSize/2) + seatingRadius*Math.cos(seatAngle) - seatRadius,
+						hasBorders: false,
+						hasControls: false,
+						selectable: false,
+						evented: false,
+						model: {
+							type: 'seat',
+							value: { tableId: table.id, seatId: j }
+						}
+					});
+        		table._seats.push(seatGroup);
+				canvas.add(seatGroup);
 				j++;
 				//end guest drawing
 			});
