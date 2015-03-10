@@ -350,6 +350,11 @@ var model = null;
 			model = JSON.parse(model);
 			calculateInitials();
 			redrawModel();
+			$("#statusText").text("Loaded saved data.");
+			$("#statusText").show();
+			setTimeout(function() {
+				$("#statusText").fadeOut("slow");
+			},3000);
 		} else {
 			resetData();
 		}
@@ -360,10 +365,20 @@ var model = null;
 		model = JSON.parse(JSON.stringify(sampleData)); // copy sample data
 		calculateInitials();
 		redrawModel();
+		$("#statusText").text("Loaded sample data.");
+		$("#statusText").show();
+		setTimeout(function() {
+			$("#statusText").fadeOut("slow");
+		},3000);
 	};
 
 	$('#btnSave').click(function() {
 		localStorage.setItem('model', JSON.stringify(model));
+		$("#statusText").text("Saved.");
+		$("#statusText").show();
+		setTimeout(function() {
+			$("#statusText").fadeOut("slow");
+		},3000);
 	});
 
 	$('#btnReset').click(resetData);
