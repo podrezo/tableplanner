@@ -205,11 +205,11 @@ var model = null;
 				fill: 'ivory',
 				stroke: 'gray' });
 			var seatingOutline = new fabric.Circle({
-					top: boxOffsetY + (boxSize-seatingRadius*2) / 2,
-					left: boxOffsetX + (boxSize-seatingRadius*2) / 2,
-					radius: seatingRadius,
-					stroke: 'blue',
-					fill: 'ivory' });
+				top: boxOffsetY + (boxSize-seatingRadius*2) / 2,
+				left: boxOffsetX + (boxSize-seatingRadius*2) / 2,
+				radius: seatingRadius,
+				stroke: 'blue',
+				fill: 'ivory' });
 			var tableCircle = new fabric.Circle({
 				top: boxOffsetY + (boxSize-(tableRadius*2))/2,
 				left: boxOffsetX + (boxSize-(tableRadius*2))/2,
@@ -219,15 +219,15 @@ var model = null;
 				hasControls: false,
 				hasBorders: true,
 				fill: 'rgb(61, 146, 201)' });
-			var tableLabel = new fabric.Text(table.id.toString(),
-				{ top: boxOffsetY + (boxSize/2),
-					left:boxOffsetX + (boxSize/2),
-					originY: boxOffsetY + (boxSize/2),
-					originX: boxOffsetX + (boxSize/2),
-					textAlign: 'center',
-					fill: 'black',
-					fontFamily: 'Verdana',
-					fontSize: baseFontSize });
+			var tableLabel = new fabric.Text(table.id.toString(),{
+				top: boxOffsetY + (boxSize/2),
+				left:boxOffsetX + (boxSize/2),
+				originY: boxOffsetY + (boxSize/2),
+				originX: boxOffsetX + (boxSize/2),
+				textAlign: 'center',
+				fill: 'black',
+				fontFamily: 'Verdana',
+				fontSize: baseFontSize });
 			var tableGroup = new fabric.Group([
 				//tableOutline,
 				//seatingOutline,
@@ -265,7 +265,7 @@ var model = null;
 						textAlign: 'center',
 						fill: 'black',
 						fontWeight: 'bold',
-						fontSize: baseFontSize/7,
+						fontSize: baseFontSize/6,
 						fontFamily: 'Verdana'
 					});
 					var guestGroup = new fabric.Group([guestCircle, guestLabel], {
